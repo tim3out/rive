@@ -1,0 +1,269 @@
+from __future__ import annotations
+import discord
+from discord.ext import commands
+from typing import TYPE_CHECKING
+from discord.ui import Modal, TextInput, button
+from utils.helpers.decorators import permissions
+
+class e:
+    unlock: str = "<:unlock:1234223586412073011>",
+    lock: str = "<:lock:1245450256926248970>",
+    rename: str = "<:rename:1245451758625624164>",
+    decrease: str = "<:decrease:1245451903182307501>",
+    increase: str = "<:increase:1245453166368264303>",
+    eye: str = "<:reveal:1245453411772534885>",
+    crosseye: str = "<:crossedeye:1245450029150376027>",
+
+class m(Modal, title="Rename your voice channel"):
+    name = TextInput(
+        label="Voice channel name",
+        placeholder="Give your voice channel a better name",
+        required=True,
+        style=discord.TextStyle.short
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        n = self.name.value
+        try:
+           await interaction.user.voice.channel.edit(name=n)   
+           await interaction.approve("Successfully renamed your voice channel")
+        except Exception as er:
+              await interaction.deny("A error occurred while renaming your voice channel")
+            
+class vm(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @button(label="" ,emoji=e.lock, style=discord.ButtonStyle.grey, custom_id="persistent_view:lock")
+    async def lock(self, interaction: discord.Interaction, button: discord.ui.Button):
+        check = await interaction.client.db.fetch("SELECT * FROM voicemaster WHERE guild_id = $1", interaction.guild.id)
+        if check is not None:
+            id = check['vc']
+            channel = interaction.guild.get_channel(id)
+            c = channel.category
+
+            if interaction.user.voice is None: return await interaction.deny("You are not in a voice channel right now")
+            if interaction.user.voice is not None: 
+                if interaction.user.voice.channel.category != c: return await interaction.deny("You are not in a voice channel created by the bot")
+            
+            ccheck = await interaction.client.db.fetch("SELECT * FROM vc WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
+            if ccheck is None: return await interaction.deny("You dont own this channel")
+            perms = interaction.user.voice.channel.overwrites_for(interaction.guild.default_role)
+            if ccheck is not None and perms is not False:
+                await interaction.user.voice.channel.set_permissions(interaction.guild.default_role, connect=False)
+                await interaction.approve(f"Locked {interaction.user.voice.channel.mention}")
+            if perms is False:
+                await interaction.deny(f"{interaction.user.voice.channel.mention} is already locked")
+
+    @button(label="" ,emoji=e.unlock, style=discord.ButtonStyle.grey, custom_id="persistent_view:unlock")
+    async def unlock(self, interaction: discord.Interaction, button: discord.ui.Button):
+        check = await interaction.client.db.fetch("SELECT * FROM voicemaster WHERE guild_id = $1", interaction.guild.id)
+        if check is not None:
+            id = check['vc']
+            channel = interaction.guild.get_channel(id)
+            c = channel.category
+
+            if interaction.user.voice is None: return await interaction.deny("You are not in a voice channel right now")
+            if interaction.user.voice is not None: 
+                if interaction.user.voice.channel.category != c: return await interaction.deny("You are not in a voice channel created by the bot")
+            
+            ccheck = await interaction.client.db.fetch("SELECT * FROM vc WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
+            if ccheck is None: return await interaction.deny("You dont own this channel")
+            perms = interaction.user.voice.channel.overwrites_for(interaction.guild.default_role)
+            if ccheck is not None and perms is not False:
+                await interaction.user.voice.channel.set_permissions(interaction.guild.default_role, connect=True)
+                await interaction.approve(f"Unlocked {interaction.user.voice.channel.mention}")
+            if perms is False:
+                await interaction.deny(f"{interaction.user.voice.channel.mention} is already unlocked")
+
+    @button(label="" ,emoji=e.eye, style=discord.ButtonStyle.grey, custom_id="persistent_view:reveal")
+    async def reveal(self, interaction: discord.Interaction, button: discord.ui.Button):
+        check = await interaction.client.db.fetch("SELECT * FROM voicemaster WHERE guild_id = $1", interaction.guild.id)
+        if check is not None:
+            id = check['vc']
+            channel = interaction.guild.get_channel(id)
+            c = channel.category
+
+            if interaction.user.voice is None: return await interaction.deny("You are not in a voice channel right now")
+            if interaction.user.voice is not None: 
+                if interaction.user.voice.channel.category != c: return await interaction.deny("You are not in a voice channel created by the bot")
+            
+            ccheck = await interaction.client.db.fetch("SELECT * FROM vc WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
+            if ccheck is None: return await interaction.deny("You dont own this channel")
+            perms = interaction.user.voice.channel.overwrites_for(interaction.guild.default_role)
+            if ccheck is not None and perms is not False:
+                await interaction.user.voice.channel.set_permissions(interaction.guild.default_role, connect=True)
+                await interaction.approve(f"Revealed {interaction.user.voice.channel.mention}")
+            if perms is False:
+                await interaction.deny(f"{interaction.user.voice.channel.mention} is already revealed")
+
+    @button(label="" ,emoji=e.crosseye, style=discord.ButtonStyle.grey, custom_id="persistent_view:hide")
+    async def hide(self, interaction: discord.Interaction, button: discord.ui.Button):
+        check = await interaction.client.db.fetch("SELECT * FROM voicemaster WHERE guild_id = $1", interaction.guild.id)
+        if check is not None:
+            id = check['vc']
+            channel = interaction.guild.get_channel(id)
+            c = channel.category
+
+            if interaction.user.voice is None: return await interaction.deny("You are not in a voice channel right now")
+            if interaction.user.voice is not None: 
+                if interaction.user.voice.channel.category != c: return await interaction.deny("You are not in a voice channel created by the bot")
+            
+            ccheck = await interaction.client.db.fetch("SELECT * FROM vc WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
+            if ccheck is None: return await interaction.deny("You dont own this channel")
+            perms = interaction.user.voice.channel.overwrites_for(interaction.guild.default_role)
+            if ccheck is not None and perms is not False:
+                await interaction.user.voice.channel.set_permissions(interaction.guild.default_role, connect=True)
+                await interaction.approve(f"Hid {interaction.user.voice.channel.mention}")
+            if perms is False:
+                await interaction.deny(f"{interaction.user.voice.channel.mention} is already hidden")
+
+    @button(label="" ,emoji=e.rename, style=discord.ButtonStyle.grey, custom_id="persistent_view:rename")
+    async def rename(self, interaction: discord.Interaction, button: discord.ui.Button):
+        check = await interaction.client.db.fetch("SELECT * FROM voicemaster WHERE guild_id = $1", interaction.guild.id)
+        if check is not None:
+            id = check['vc']
+            channel = interaction.guild.get_channel(id)
+            c = channel.category
+
+            if interaction.user.voice is None: return await interaction.deny("You are not in a voice channel right now")
+            if interaction.user.voice is not None: 
+                if interaction.user.voice.channel.category != c: return await interaction.deny("You are not in a voice channel created by the bot")
+            
+            ccheck = await interaction.client.db.fetch("SELECT * FROM vc WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
+            if ccheck is None: return await interaction.deny("You dont own this channel")
+            else:
+                r = m()
+                await interaction.response.send_modal(r)
+
+    @button(label="" ,emoji=e.increase, style=discord.ButtonStyle.grey, custom_id="persistent_view:increase")
+    async def increase(self, interaction: discord.Interaction, button: discord.ui.Button):
+        check = await interaction.client.db.fetch("SELECT * FROM voicemaster WHERE guild_id = $1", interaction.guild.id)
+        if check is not None:
+            id = check['vc']
+            channel = interaction.guild.get_channel(id)
+            c = channel.category
+
+            if interaction.user.voice is None: return await interaction.deny("You are not in a voice channel right now")
+            if interaction.user.voice is not None: 
+                if interaction.user.voice.channel.category != c: return await interaction.deny("You are not in a voice channel created by the bot")
+            
+            ccheck = await interaction.client.db.fetch("SELECT * FROM vc WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
+            if ccheck is None: return await interaction.deny("You dont own this channel")
+            else:
+                limit = interaction.user.voice.channel.user_limit
+                if limit == 99: return await interaction.deny(f"I cannot increase the user limit for {interaction.user.voice.channel.mention}")
+                res = limit + 1
+                await interaction.user.voice.channel.edit(user_limit=res)
+                await interaction.approve(f"Increased the user limit for {interaction.user.voice.channel.mention}")
+
+    @button(label="" ,emoji=e.decrease, style=discord.ButtonStyle.grey, custom_id="persistent_view:decrease")
+    async def decrease(self, interaction: discord.Interaction, button: discord.ui.Button):
+        check = await interaction.client.db.fetch("SELECT * FROM voicemaster WHERE guild_id = $1", interaction.guild.id)
+        if check is not None:
+            id = check['vc']
+            channel = interaction.guild.get_channel(id)
+            c = channel.category
+
+            if interaction.user.voice is None: return await interaction.deny("You are not in a voice channel right now")
+            if interaction.user.voice is not None: 
+                if interaction.user.voice.channel.category != c: return await interaction.deny("You are not in a voice channel created by the bot")
+            
+            ccheck = await interaction.client.db.fetch("SELECT * FROM vc WHERE voice = $1 AND user_id = $2", interaction.user.voice.channel.id, interaction.user.id)
+            if ccheck is None: return await interaction.deny("You dont own this channel")
+            else:
+                limit = interaction.user.voice.channel.user_limit
+                if limit == 1: return await interaction.deny(f"I cannot decrease the user limit for {interaction.user.voice.channel.mention}")
+                res = limit - 1
+                await interaction.user.voice.channel.edit(user_limit=res)
+                await interaction.approve(f"Decreased the user limit for {interaction.user.voice.channel.mention}")
+
+class voicemaster(commands.Cog):
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+
+    @commands.Cog.listener() 
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+       check = await self.bot.db.execute("SELECT * FROM voicemaster WHERE guild_id = {}".format(member.guild.id))
+       if check is not None:
+        chan = check['vc']
+        if (after.channel is not None and before.channel is None) or (after.channel is not None and before.channel is not None):
+         if after.channel.id == int(chan) and before.channel is None:     
+           channel = await member.guild.create_voice_channel(f"{member.name}'s channel", category=after.channel.category)
+           await member.move_to(channel)
+           await self.bot.db.execute("INSERT INTO vc VALUES (?,?)", (member.id, after.channel.id))
+         elif before.channel is not None and after.channel is not None:
+          cccheck = await self.bot.db.execute("SELECT * FROM vc WHERE voice = {}".format(before.channel.id))
+          if (cccheck is not None) and (before.channel is not None and after.channel.id == int(chan)):
+           if before.channel.category == after.channel.category: 
+            if before.channel.id == after.channel.id: return  
+            await before.channel.delete()
+            await self.bot.db.execute("DELETE FROM vc WHERE voice = {}".format(before.channel.id)) 
+            await member.move_to(channel=None)
+           else: 
+             c = await member.guild.create_voice_channel(f"{member.name}'s channel", category=after.channel.category)
+             await member.move_to(c)
+             await self.bot.db.execute("INSERT INTO vc VALUES (?,?)", (member.id, c.id))
+          elif (cccheck is not None) and (before.channel is not None and after.channel.id != int(chan)):
+             if before.channel.category == after.channel.category: 
+              if before.channel.id == after.channel.id: return    
+              await before.channel.delete()
+              await self.bot.db.execute("DELETE FROM vc WHERE voice = {}".format(before.channel.id))
+             elif after.channel.category != before.channel.category: 
+                  if before.channel.id == int(chan): return
+                  channel = before.channel  
+                  members = channel.members
+                  if len(members) == 0:
+                   await self.bot.db.execute("DELETE FROM vc WHERE voice = {}".format(before.channel.id))
+                   await channel.delete() 
+
+        elif before.channel is not None and after.channel is None: 
+            ccheck = await self.bot.db.execute("SELECT * FROM vc WHERE voice = {}".format(before.channel.id))
+            if ccheck is not None:  
+                channel = before.channel  
+                members = channel.members
+                if len(members) == 0:
+                    await self.bot.db.execute("DELETE FROM vc WHERE voice = {}".format(before.channel.id))
+                    await channel.delete()   
+
+    @commands.command(aliases=["vm"])
+    @permissions.Permissions.has_permission(manage_channels=True)
+    async def voicemaster(self, ctx: commands.Context, o: str):
+        if o == None: return await ctx.deny("Please define a option")
+        elif o == "setup" or o == "set":
+            c = await self.bot.db.execute("SELECT * FROM voicemaster WHERE guild_id = {}".format(ctx.guild.id))
+            if c is not None: return await ctx.deny("Voicemaster is already setup")
+            else:
+                category = await ctx.guild.create_category("voice")
+                overwrite = {ctx.guild.default_role: discord.PermissionOverwrite(view_channel=True, send_messages=False)}  
+                ch = await category.create_text_channel(name="interface", overwrites=overwrite) 
+                vc = await category.create_voice_channel(name="join to create")
+                em = discord.Embed(color=0x2b2d31, title="VoiceMaster", description="Click the buttons below to control the voice channel")
+                em.add_field(name="Usage", value=f"{e.lock} - [`lock`](https://discord.gg/brat) the voice channel\n{e.unlock} - [`unlock`](https://discord.gg/brat) the voice channel\n{e.increase} - [`increase`](https://discord.gg/brat) the voice channel user limit\n{e.decrease} - [`decrease`](https://discord.gg/brat) the voice channel user limit\n{e.rename} - [`rename`](https://discord.gg/brat) the voice channel\n{e.crosseye} - [`hide`](https://discord.gg/brat) the voice channel\n{e.eye} - [`reveal`](https://discord.gg/brat) the voice channel")
+                em.set_footer(icon_url="https://cdn.discordapp.com/attachments/1208741351760461846/1234890090283667567/1203853126486990909.gif?ex=66326084&is=66310f04&hm=3c0bb03f86cb839aded3f573cf6ad5cd83de0fd5fefdae3ca62d7bcfaf8085d6&", text="rive")
+                await ch.send(embed=em, view=vm())
+                await self.bot.db.execute("INSERT INTO voicemaster VALUES (?,?,?)", (ctx.guild.id, vc.id, ch.id))
+                await ctx.approve("Successfully configured voicemaster")
+
+        elif o == "unsetup" or o == "unset":
+            c = await self.bot.db.execute("SELECT * FROM voicemaster WHERE guild_id = {}".format(ctx.guild.id))
+            if c is None: return await ctx.deny("Voicemaster is not setup")
+            else:
+                channelid = c['vc']
+                interfaceid = c['interface']
+                channel2 = ctx.guild.get_channel(interfaceid)
+                channel = ctx.guild.get_channel(channelid)
+                category = channel.category
+                channels = category.channels
+                for chan in channels:
+                   try:
+                       await chan.delete()
+                   except:
+                      continue  
+                await category.delete()    
+                await channel2.delete()      
+                await self.bot.db.execute("DELETE FROM voicemaster WHERE guild_id = {}".format(ctx.guild.id))
+                return await ctx.approve("Successfully unconfigured voicemaster") 
+            
+async def setup(bot):
+    await bot.add_cog(voicemaster(bot))
